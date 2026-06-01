@@ -1016,3 +1016,32 @@ fn test_subscribe_overwrites_cancelled_subscription() {
     assert!(sub_new.active);
     assert_eq!(sub_new.amount, 2_0000000);
 }
+
+// ─────────────────────────────────────────────────────────────
+// Issue #246: whitelist event emission tests
+// ─────────────────────────────────────────────────────────────
+
+#[test]
+fn test_add_merchant_emits_event() {
+    let (env, contract_id, _token_addr, admin, merchant) = setup();
+    let client = FlowPayClient::new(&env, &contract_id);
+    env.as_contract(&contract_id, || {
+        storage::set_admin(&env, &admin);
+    });
+
+    client.add_merchant(&merchant);
+    assert_last_user_event(&env, "merchant_added", &merchant);
+}
+
+#[test]
+fn test_remove_merchant_emits_event() {
+    let (env, contract_id, _token_addr, admin, merchant) = setup();
+    let client = FlowPayClient::new(&env, &contract_id);
+    env.as_contract(&contract_id, || {
+        storage::set_admin(&env, &admin);
+    });
+
+    client.add_merchant(&merchant);
+    client.remove_merchant(&merchant);
+    assert_last_user_event(&env, "merchant_removed", &merchant);
+}

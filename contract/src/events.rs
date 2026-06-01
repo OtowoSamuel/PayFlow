@@ -59,3 +59,17 @@ pub fn publish_admin_transferred(env: &Env, old_admin: &Address, new_admin: &Add
         (old_admin.clone(), new_admin.clone()),
     );
 }
+
+pub fn publish_merchant_added(env: &Env, merchant: &Address) {
+    env.events().publish(
+        (Symbol::new(env, "merchant_added"), merchant.clone()),
+        (),
+    );
+}
+
+pub fn publish_merchant_removed(env: &Env, merchant: &Address) {
+    env.events().publish(
+        (Symbol::new(env, "merchant_removed"), merchant.clone()),
+        (),
+    );
+}

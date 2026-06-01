@@ -59,3 +59,10 @@ pub fn publish_admin_transferred(env: &Env, old_admin: &Address, new_admin: &Add
         (old_admin.clone(), new_admin.clone()),
     );
 }
+
+pub fn publish_referred(env: &Env, user: &Address, referrer: &Address) {
+    env.events().publish(
+        (Symbol::new(env, "referred"), user.clone()),
+        referrer.clone(),
+    );
+}

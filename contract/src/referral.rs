@@ -1,6 +1,6 @@
-use soroban_sdk::{Address, Env, Symbol};
+use soroban_sdk::{Address, Env};
 
-use crate::DataKey;
+use crate::{events, DataKey};
 
 /// Returns the referrer for a given subscriber, if one was recorded.
 pub fn get_referrer(env: &Env, user: &Address) -> Option<Address> {
@@ -16,7 +16,6 @@ pub fn store_referral(env: &Env, user: &Address, referrer: &Option<Address>) {
             .persistent()
             .set(&DataKey::Referral(user.clone()), r);
 
-        env.events()
-            .publish((Symbol::new(env, "referred"), user.clone()), r.clone());
+        events::publish_referred(env, user, r);
     }
 }

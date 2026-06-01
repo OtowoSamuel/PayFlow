@@ -751,7 +751,23 @@ fn test_referral_stored_on_subscribe() {
     let referrer = Address::generate(&env);
     client.subscribe(&user, &merchant, &1_0000000, &86400, &token_addr, &None, &Some(referrer.clone()));
 
-    assert_eq!(client.get_referrer(&user), Some(referrer));
+    assert_eq!(client.get_referrer(&user), Some(referrer.clone()));
+
+    // Verify referred event was emitted
+    let events = env.events().all();
+    let referred_event = events.iter().find(|(_, topics, _)| {
+        if let Ok(sym) = topics.get(0).unwrap().try_into_val::<_, Symbol>(&env) {
+            sym == Symbol::new(&env, "referred")
+        } else {
+            false
+        }
+    });
+    assert!(referred_event.is_some(), "referred event should be emitted");
+    let (_, topics, data) = referred_event.unwrap();
+    let topic_user: Address = topics.get(1).unwrap().try_into_val(&env).unwrap();
+    let emitted_referrer: Address = data.try_into_val(&env).unwrap();
+    assert_eq!(topic_user, user);
+    assert_eq!(emitted_referrer, referrer);
 }
 
 #[test]

@@ -183,13 +183,25 @@ impl FlowPay {
             trial_duration,
         };
 
+        let existing_sub: Option<Subscription> = env
+            .storage()
+            .persistent()
+            .get(&DataKey::Subscription(user.clone()));
+
+        let should_increment = existing_sub
+            .as_ref()
+            .map(|existing| !existing.active)
+            .unwrap_or(true);
+
         env.storage()
             .persistent()
             .set(&DataKey::Subscription(user.clone()), &sub);
 
         extend_subscription_ttl(&env, &user);
 
-        subscription_count::increment(&env);
+        if should_increment {
+            subscription_count::increment(&env);
+        }
         referral::store_referral(&env, &user, &referrer);
         events::publish_subscribed(&env, &user, &sub);
     }
@@ -406,8 +418,7 @@ impl FlowPay {
 
         env.storage().persistent().set(&key, &sub);
 
-        env.events()
-            .publish((Symbol::new(&env, "paused"), user), ());
+        events::publish_paused(&env, &user);
     }
 
     /// Resumes `user`'s paused subscription.
@@ -448,8 +459,7 @@ impl FlowPay {
 
         env.storage().persistent().set(&key, &sub);
 
-        env.events()
-            .publish((Symbol::new(&env, "resumed"), user), ());
+        events::publish_resumed(&env, &user);
     }
 
     /// Pauses all user-facing payment operations for the contract.

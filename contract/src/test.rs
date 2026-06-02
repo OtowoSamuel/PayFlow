@@ -1087,6 +1087,9 @@ fn test_batch_charge_stress() {
 
     let results = client.batch_charge(&users);
 
+/// batch_charge must return ChargeResult::Paused for a subscription that has been paused.
+#[test]
+fn test_batch_charge_paused() {
     assert_eq!(results.len(), num_users);
     for r in results.into_iter() {
         assert_eq!(r, crate::ChargeResult::Charged);
@@ -1099,6 +1102,14 @@ fn test_batch_charge_inactive() {
     let client = FlowPayClient::new(&env, &contract_id);
 
     let interval: u64 = 86400;
+    client.subscribe(&user, &merchant, &1_0000000, &interval, &token_addr, &None, &None);
+
+    // Pause the subscription — it remains active but billing is suspended.
+    client.pause(&user);
+
+    // Advance past the billing interval to confirm the paused check fires
+    // before the interval/grace checks.
+    env.ledger().with_mut(|l| { l.timestamp += interval + 1; });
     client.subscribe(
         &user,
         &merchant,
@@ -1153,6 +1164,8 @@ fn test_batch_charge_grace_period_elapsed() {
     let results = client.batch_charge(&users);
     assert_eq!(
         results.get(0).unwrap(),
+        crate::ChargeResult::Paused,
+        "batch_charge should return Paused for a paused subscription"
         crate::ChargeResult::GracePeriodElapsed
     );
 }

@@ -24,6 +24,10 @@ pub enum ContractError {
     GracePeriodElapsed = 9,
     /// Returned when a merchant is not whitelisted
     MerchantNotWhitelisted = 10,
+    /// Returned when fee basis points exceed 10000
+    InvalidFeeBps = 11,
+    /// Returned when a user attempts to refer themselves
+    SelfReferral = 12,
     /// Returned when the metadata label exceeds the 64-byte length limit
     MetadataLabelTooLong = 11,
     /// Returned when a user attempts to refer themselves

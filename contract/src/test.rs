@@ -2715,3 +2715,26 @@ fn test_is_charge_due_false_for_paused_subscription() {
     env.ledger().with_mut(|l| { l.timestamp += interval + 1; });
     assert!(!client.is_charge_due(&user));
 }
+
+#[test]
+fn test_is_charge_due_false_past_grace_window() {
+    let (env, contract_id, token_addr, user, merchant) = setup();
+    let client = FlowPayClient::new(&env, &contract_id);
+
+    let interval: u64 = 86400;
+    let grace: u64 = 3600;
+    client.subscribe(&user, &merchant, &1_0000000, &interval, &token_addr, &None, &None);
+    client.set_grace_period(&grace);
+
+    env.ledger().with_mut(|l| { l.timestamp += interval + grace + 1; });
+
+    assert!(!client.is_charge_due(&user));
+}
+
+#[test]
+fn test_is_charge_due_false_for_unknown_address() {
+    let (env, contract_id, _token_addr, _user, _merchant) = setup();
+    let client = FlowPayClient::new(&env, &contract_id);
+
+    assert!(!client.is_charge_due(&Address::generate(&env)));
+}

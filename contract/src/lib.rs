@@ -170,7 +170,7 @@ impl FlowPay {
         if amount <= 0 {
             env.panic_with_error(ContractError::AmountMustBePositive);
         }
-        if interval == 0 {
+        if interval < 60 {
             env.panic_with_error(ContractError::IntervalMustBePositive);
         }
 

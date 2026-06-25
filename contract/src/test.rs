@@ -2720,6 +2720,9 @@ fn test_is_charge_due_false_for_paused_subscription() {
 fn test_is_charge_due_false_past_grace_window() {
     let (env, contract_id, token_addr, user, merchant) = setup();
     let client = FlowPayClient::new(&env, &contract_id);
+    env.as_contract(&contract_id, || {
+        storage::set_admin(&env, &user);
+    });
 
     let interval: u64 = 86400;
     let grace: u64 = 3600;

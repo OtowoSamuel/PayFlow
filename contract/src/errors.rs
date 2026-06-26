@@ -40,4 +40,10 @@ pub enum ContractError {
     SubscriptionPaused = 17,
     /// Returned when the contract has been paused by admin
     ContractPaused = 18,
+    /// Returned when a subscription interval is below the minimum permitted floor
+    IntervalTooShort = 19,
+    /// Returned when a merchant attempts to withdraw with no accrued revenue
+    ZeroBalanceAvailable = 20,
+    /// Returned when attempting to subscribe to a frozen merchant
+    MerchantFrozen = 22,
 }

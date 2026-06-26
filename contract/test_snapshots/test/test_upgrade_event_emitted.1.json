@@ -913,110 +913,16 @@
       "event": {
         "ext": "v0",
         "contract_id": "0000000000000000000000000000000000000000000000000000000000000003",
-        "type_": "diagnostic",
+        "type_": "contract",
         "body": {
           "v0": {
             "topics": [
               {
-                "symbol": "error"
-              },
-              {
-                "error": {
-                  "auth": "existing_value"
-                }
+                "symbol": "upgraded"
               }
             ],
             "data": {
-              "string": "frame is already authorized"
-            }
-          }
-        }
-      },
-      "failed_call": true
-    },
-    {
-      "event": {
-        "ext": "v0",
-        "contract_id": "0000000000000000000000000000000000000000000000000000000000000003",
-        "type_": "diagnostic",
-        "body": {
-          "v0": {
-            "topics": [
-              {
-                "symbol": "error"
-              },
-              {
-                "error": {
-                  "auth": "existing_value"
-                }
-              }
-            ],
-            "data": {
-              "string": "escalating error to panic"
-            }
-          }
-        }
-      },
-      "failed_call": true
-    },
-    {
-      "event": {
-        "ext": "v0",
-        "contract_id": "0000000000000000000000000000000000000000000000000000000000000003",
-        "type_": "diagnostic",
-        "body": {
-          "v0": {
-            "topics": [
-              {
-                "symbol": "error"
-              },
-              {
-                "error": {
-                  "auth": "existing_value"
-                }
-              }
-            ],
-            "data": {
-              "string": "caught error from function"
-            }
-          }
-        }
-      },
-      "failed_call": true
-    },
-    {
-      "event": {
-        "ext": "v0",
-        "contract_id": null,
-        "type_": "diagnostic",
-        "body": {
-          "v0": {
-            "topics": [
-              {
-                "symbol": "error"
-              },
-              {
-                "error": {
-                  "auth": "existing_value"
-                }
-              }
-            ],
-            "data": {
-              "vec": [
-                {
-                  "string": "contract call failed"
-                },
-                {
-                  "symbol": "upgrade"
-                },
-                {
-                  "vec": [
-                    {
-                      "bytes": "0707070707070707070707070707070707070707070707070707070707070707"
-                    }
-                  ]
-                }
-              ]
+              "bytes": "0707070707070707070707070707070707070707070707070707070707070707"
             }
           }
         }
@@ -1026,23 +932,19 @@
     {
       "event": {
         "ext": "v0",
-        "contract_id": null,
+        "contract_id": "0000000000000000000000000000000000000000000000000000000000000003",
         "type_": "diagnostic",
         "body": {
           "v0": {
             "topics": [
               {
-                "symbol": "error"
+                "symbol": "fn_return"
               },
               {
-                "error": {
-                  "auth": "existing_value"
-                }
+                "symbol": "upgrade"
               }
             ],
-            "data": {
-              "string": "escalating error to panic"
-            }
+            "data": "void"
           }
         }
       },

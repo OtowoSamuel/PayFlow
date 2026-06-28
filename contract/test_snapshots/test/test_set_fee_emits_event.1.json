@@ -1060,6 +1060,7 @@
                   "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMDR4"
                 },
                 {
+                  "u32": 100
                   "u32": 500
                 }
               ]
@@ -1123,6 +1124,7 @@
           "v0": {
             "topics": [
               {
+                "symbol": "fee_committed"
                 "symbol": "fee_proposed"
               }
             ],

@@ -166,6 +166,7 @@ fn test_charge_applies_protocol_fee_and_records_net_revenue() {
     env.as_contract(&contract_id, || {
         storage::set_admin(&env, &admin);
     });
+    client.propose_fee(&collector, &500u32);
     client.propose_fee(&collector, &500);
     client.commit_fee();
     client.commit_fee(); // 5%
@@ -201,6 +202,7 @@ fn test_charge_with_zero_fee_bps_skips_fee_transfer() {
     env.as_contract(&contract_id, || {
         storage::set_admin(&env, &admin);
     });
+    client.propose_fee(&collector, &0u32);
     client.propose_fee(&collector, &500);
     client.propose_fee(&collector, &0);
     client.commit_fee();
@@ -746,6 +748,7 @@ fn test_pay_per_use_applies_protocol_fee_and_records_net_revenue() {
     env.as_contract(&contract_id, || {
         storage::set_admin(&env, &admin);
     });
+    client.propose_fee(&collector, &250u32);
     client.propose_fee(&collector, &500);
     client.propose_fee(&collector, &250);
     client.commit_fee();
@@ -777,6 +780,7 @@ fn test_pay_per_use_with_zero_fee_bps_transfers_full_amount() {
     env.as_contract(&contract_id, || {
         storage::set_admin(&env, &admin);
     });
+    client.propose_fee(&collector, &0u32);
     client.propose_fee(&collector, &500);
     client.propose_fee(&collector, &0);
     client.commit_fee();
@@ -1431,6 +1435,7 @@ fn test_batch_charge_grace_period_elapsed() {
     env.as_contract(&contract_id, || {
         storage::set_admin(&env, &user);
     });
+    client.propose_grace_period(&86400u64);
     client.propose_grace_period(&86400);
     client.commit_grace_period();
 
@@ -1980,6 +1985,7 @@ fn test_grace_period_ttl_extension() {
 
     // Set a grace period as admin and verify read returns the same value.
     let seconds: u64 = 3600;
+    client.propose_grace_period(&3600u64);
     client.propose_grace_period(&86400);
     client.propose_grace_period(&3600);
     client.propose_grace_period(&seconds);
@@ -3152,6 +3158,7 @@ fn test_get_grace_period_after_set() {
     env.as_contract(&contract_id, || {
         storage::set_admin(&env, &user);
     });
+    client.propose_grace_period(&3600u64);
     client.propose_grace_period(&86400);
     client.propose_grace_period(&3600);
     client.commit_grace_period();
@@ -3171,6 +3178,7 @@ fn test_set_fee_emits_event() {
     });
 
     let collector = Address::generate(&env);
+    client.propose_fee(&collector, &100u32);
     client.propose_fee(&collector, &500);
     client.propose_fee(&collector, &100);
     client.commit_fee();
@@ -3194,6 +3202,7 @@ fn test_get_fee_returns_current_fee_settings() {
     });
 
     let collector = Address::generate(&env);
+    client.propose_fee(&collector, &250u32);
     client.propose_fee(&collector, &500);
     client.propose_fee(&collector, &250);
     client.commit_fee();
@@ -3211,6 +3220,7 @@ fn test_set_fee_invalid_bps_panics() {
     });
 
     let collector = Address::generate(&env);
+    client.propose_fee(&collector, &10_001u32);
     client.propose_fee(&collector, &500);
     client.propose_fee(&collector, &10001);
     client.commit_fee();
@@ -3228,6 +3238,7 @@ fn test_set_grace_period_emits_event() {
         storage::set_admin(&env, &user);
     });
 
+    client.propose_grace_period(&7200u64);
     client.propose_grace_period(&86400);
     client.propose_grace_period(&7200);
     client.commit_grace_period();
@@ -3325,6 +3336,7 @@ fn test_non_admin_set_grace_period_panics() {
 
     env.set_auths(&[]);
 
+    client.propose_grace_period(&3600u64);
     client.propose_grace_period(&86400);
     client.propose_grace_period(&3600);
     client.commit_grace_period();

@@ -1,84 +1,258 @@
 # Frontend Architecture Guide
 
-This document provides a comprehensive overview of the frontend architecture for the PayFlow application. It outlines the technical stack, core Stellar integration patterns, custom React hooks composition, wallet connection lifecycles, global state management strategies, and the structural design of the interface components.
+## Overview
+
+The PayFlow frontend is a React + TypeScript application built with Vite. It provides the user interface for interacting with the Stellar smart contract through a centralized contract wrapper while keeping UI components focused on presentation and user interaction.
+
+The architecture separates responsibilities into:
+
+- Components for rendering the UI
+- Hooks for reusable business logic
+- `stellar.ts` for all blockchain communication
+- Services for utility functionality
+- Local state and custom hooks for application state
 
 ---
 
-## 1. Technical Stack Overview
+# Technology Stack
 
-The PayFlow frontend is engineered to provide a high-performance, resilient, and completely type-safe user interface for interacting with smart contracts on the Stellar network.
-
-* **Framework:** Next.js (App Router) for hybrid server-side rendering, optimized page delivery, and routing.
-* **Language:** TypeScript enforced with strict type-safety boundaries across all API endpoints and network interactions.
-* **Styling:** Tailwind CSS using a structured component layout system for responsive utility-first design.
-* **Blockchain Integration:** `@stellar/stellar-sdk` for transaction construction, XDR parsing, and Horizon RPC communication.
-* **Wallet Interoperability:** `@stellar/freighter-api` as the primary non-custodial browser wallet connector.
-
----
-
-## 2. stellar.ts Core Architecture
-
-All low-level interaction with the Stellar ledger is centralized within `lib/stellar.ts`. This decoupling ensures that components never trigger untyped or raw RPC commands directly. Operations are strictly segmented into **Read Functions** and **Write Functions**.
-
-### Read Functions (Queries)
-Read functions query the current state of a Stellar smart contract or account without modifying data or consuming network fees.
-* **Mechanism:** They instantiate a `SorobanRpc.Server` connection and invoke the `simulateTransaction` method using a structural mock transaction.
-* **Characteristics:** Synchronous behavior, instantaneous execution, requires no user signatures, and returns decoded XDR data directly.
-
-### Write Functions (Transactions)
-Write functions submit state-changing transactions to the Stellar network, which alters contract storage slots and burns lumens (`XLM`) for transaction fees.
-* **Mechanism:** They construct an explicit transaction envelope via the `TransactionBuilder`, fetch the current account sequence number, append the necessary contract invocation arguments, and request an external cryptographic signature.
-* **Characteristics:** Asynchronous multi-stage processing, requires explicit user authorization via a connected wallet, requires gas/fee estimation, and relies on checking status hashes until a validated ledger block is forged.
+| Technology | Purpose |
+|------------|---------|
+| React | Component based UI |
+| TypeScript | Static typing |
+| Vite | Development server and bundler |
+| Stellar SDK | Building and signing Stellar transactions |
+| Soroban RPC | Smart contract communication |
+| Freighter Wallet | Wallet connection and transaction signing |
 
 ---
 
-## 3. Hook Composition Patterns
+# Project Structure
 
-Components never consume contract methods or state directly from `stellar.ts`. Instead, PayFlow utilizes a layered **Hook Composition Pattern** that abstracts data fetching, loading flags, error boundaries, and state caching into modular React Hooks.
+```
+frontend/
+│
+├── components/
+├── hooks/
+├── services/
+├── types/
+├── stellar.ts
+├── App.tsx
+└── main.tsx
+```
 
-### Architectural Blueprint
-1.  **Low-Level API Layer (`lib/stellar.ts`):** Handles raw transaction syntax and network serialization.
-2.  **Mid-Level Custom Hook Layer (`hooks/useContract.ts`):** Manages asynchronous life cycles, handles execution exceptions, and controls loading indicators.
-3.  **UI View Layer (`components/`):** Consumes reactive data values and hooks up operational handlers directly to interactive inputs.
+Each directory has a dedicated responsibility.
 
-### Example Implementation
+- **components** contain reusable UI.
+- **hooks** encapsulate business logic.
+- **services** provide shared utilities.
+- **stellar.ts** acts as the blockchain gateway.
 
-```typescript
-import { useState, useEffect, useCallback } from 'react';
-import { get_fee } from '@/lib/stellar';
+---
 
-export interface FeeConfig {
-  collector: string;
-  feeBps: number;
-}
+# stellar.ts Architecture
 
-/**
- * Mid-Level Custom Hook managing fee state configuration fetching
- */
-export function useFeeCollector() {
-  const [data, setData] = useState<FeeConfig | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<Error | null>(null);
+`stellar.ts` is the single entry point for all smart contract interactions.
 
-  const fetchFeeConfig = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const config = await get_fee();
-      setData({
-        collector: config.collector,
-        feeBps: config.fee_bps,
-      });
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to fetch fee configuration'));
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+Instead of allowing components to call the Stellar SDK directly, every blockchain operation is routed through this file.
 
-  useEffect(() => {
-    fetchFeeConfig();
-  }, [fetchFeeConfig]);
+Benefits include:
 
-  return { data, isLoading, error, refetch: fetchFeeConfig };
-}
+- Single source of truth
+- Easier maintenance
+- Easier testing
+- Consistent transaction handling
+- Reduced duplication
+
+## Function Categories
+
+### Read Operations
+
+Read functions fetch blockchain data without requiring a signed transaction.
+
+Typical responsibilities include:
+
+- Reading contract state
+- Loading subscriptions
+- Retrieving balances
+- Querying events
+- Reading configuration values
+
+These operations are safe because they do not modify blockchain state.
+
+---
+
+### Write Operations
+
+Write functions submit transactions that modify contract state.
+
+Typical responsibilities include:
+
+- Creating subscriptions
+- Updating subscriptions
+- Cancelling subscriptions
+- Charging customers
+- Administrative contract actions
+
+Write operations generally:
+
+1. Build the transaction
+2. Request a signature from Freighter
+3. Submit the signed transaction
+4. Wait for confirmation
+5. Return the parsed result
+
+---
+
+# Hook Composition Pattern
+
+The application follows a hook composition pattern.
+
+Rather than placing blockchain logic inside components, components compose multiple focused hooks.
+
+For example, `App.tsx` combines hooks including:
+
+- useWallet()
+- useTheme()
+- useResponsive()
+- useAccessibility()
+- useFreighterAvailable()
+- useNetworkCheck()
+- useContractId()
+
+Each hook owns one responsibility.
+
+Example:
+
+```tsx
+const wallet = useWallet();
+const theme = useTheme();
+const responsive = useResponsive();
+```
+
+This approach improves:
+
+- readability
+- reusability
+- testing
+- separation of concerns
+
+---
+
+# Wallet Connection Flow (Freighter)
+
+Wallet connectivity is handled through the custom `useWallet` hook together with Freighter detection.
+
+Connection flow:
+
+1. Application loads.
+2. `useFreighterAvailable()` checks whether `window.freighter` exists.
+3. If available, `useWallet()` attempts to restore the previously connected wallet from local storage.
+4. The cached public key is validated with Freighter.
+5. The hook exposes a `ready` state once validation completes.
+6. If the user is not connected, the UI presents the Connect Wallet action.
+7. When the user connects:
+   - Freighter returns the public key.
+   - The public key is stored locally.
+8. Any contract write operation requests transaction signing through Freighter.
+9. The signed transaction is submitted through `stellar.ts`.
+10. The UI updates after confirmation.
+
+This design allows wallet persistence across page reloads while ensuring the cached account remains valid.
+
+---
+
+# Component Tree
+
+The exact tree evolves as features are added, but the overall structure is:
+
+```
+App
+│
+├── Layout
+│
+├── Wallet Components
+│   ├── Connect Wallet
+│   └── Wallet Status
+│
+├── Dashboard
+│
+├── Subscription Views
+│
+├── Merchant Dashboard
+│
+├── History
+│
+└── Shared Components
+```
+
+Heavy views are lazy loaded where appropriate to reduce initial bundle size.
+
+---
+
+# State Management
+
+The frontend primarily uses React hooks instead of a dedicated global state library.
+
+## Local State
+
+Component-specific state uses:
+
+- useState
+- useReducer (where appropriate)
+
+Examples include:
+
+- modal visibility
+- form values
+- loading states
+
+---
+
+## Custom Hooks
+
+Reusable application logic is extracted into hooks.
+
+Examples include:
+
+- wallet management
+- network validation
+- accessibility
+- responsive layout
+- theme management
+- local storage persistence
+
+This keeps components lightweight.
+
+---
+
+## Context
+
+Context is used only when shared application state must be accessible by multiple components.
+
+Business logic remains inside custom hooks rather than Context itself.
+
+---
+
+# Why This Architecture
+
+This architecture provides:
+
+- Clear separation between UI and blockchain logic
+- Reusable business logic through hooks
+- Centralized smart contract communication
+- Easier maintenance
+- Better scalability
+- Cleaner React components
+
+---
+
+# Summary
+
+The frontend is organized around a simple principle:
+
+- Components render the UI.
+- Hooks manage application logic.
+- `stellar.ts` owns blockchain communication.
+- Freighter signs transactions.
+- React state and hooks manage application state efficiently.

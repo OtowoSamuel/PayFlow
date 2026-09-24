@@ -40,6 +40,7 @@ import {
   xdr,
 } from "@stellar/stellar-sdk";
 import { Server } from "@stellar/stellar-sdk/rpc";
+import { fileURLToPath } from "node:url";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -401,8 +402,12 @@ async function main() {
   }
 }
 
-// Only run when executed directly (not when imported in tests)
-if (require.main === module) {
+// Only run when executed directly (not when imported in tests).
+// ESM entrypoint guard (scripts/package.json sets "type": "module", so the
+// CJS `require.main === module` check would throw `require is not defined`
+// under tsx). Matches the guard used in scripts/indexer.ts.
+const isMain = process.argv[1] === fileURLToPath(import.meta.url);
+if (isMain) {
   main().catch((err) => {
     console.error(err);
     process.exit(1);
@@ -468,7 +473,7 @@ function main() {
 
   const db = new DatabaseSync(dbPath, { open: true });
   const rows = db
-    .prepare("SELECT data FROM events WHERE event_name = 'charged'")
+    .prepare("SELECT raw_data FROM events WHERE event_name = 'charged'")
     .all() as unknown as EventRow[];
   db.close();
 

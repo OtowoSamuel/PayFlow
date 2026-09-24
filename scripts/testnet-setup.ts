@@ -14,7 +14,11 @@ const FRIENDBOT_URL =
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 
-// ── Argument parsing ─────────────────────────────────────────────────────────
+// ── Configuration ────────────────────────────────────────────────────────────
+
+// RPC and friendbot URLs are configured above; the following were duplicated
+// const RPC_URL = process.env.RPC_URL || process.env.VITE_RPC_URL || "https://soroban-testnet.stellar.org";
+// const FRIENDBOT_URL = process.env.FRIENDBOT_URL || "https://friendbot.stellar.org";
 
 interface SetupArgs {
   seed: number;
@@ -70,8 +74,6 @@ interface Identity {
   role: "user" | "merchant";
   index: number;
 }
-const RPC_URL = process.env.RPC_URL || process.env.VITE_RPC_URL || "https://soroban-testnet.stellar.org";
-const FRIENDBOT_URL = process.env.FRIENDBOT_URL || "https://friendbot.stellar.org";
 const NETWORK_PASSPHRASE = process.env.NETWORK_PASSPHRASE || process.env.VITE_NETWORK_PASSPHRASE || Networks.TESTNET;
 const DEFAULT_TOKEN = process.env.VITE_DEFAULT_TOKEN || "CB64D3BV7P25CBZ76AEGY2FJD2N2Z35TXTLA2HO7DS4SYYBZWAZZTACC"; // Native XLM SAC on Testnet
 

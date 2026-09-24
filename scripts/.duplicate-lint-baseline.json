@@ -4,7 +4,6 @@
     "config.ts",
     "deploy-pipeline.ts",
     "grace-period-monitor.ts",
-    "health-check.ts",
     "migrate-contract.ts",
     "onboard-merchant.ts",
     "pre-upgrade-check.ts",
@@ -13,7 +12,6 @@
     "subscription-snapshot.ts",
     "test-churn-analysis.ts",
     "test-dlq.ts",
-    "testnet-setup.ts",
-    "top-merchants.ts"
+    "testnet-setup.ts"
   ]
 }

@@ -141,4 +141,5 @@ function main() {
   } else process.stdout.write(json + "\n");
 }
 
-main();
+const isMain = process.argv[1] === fileURLToPath(import.meta.url);
+if (isMain) main();

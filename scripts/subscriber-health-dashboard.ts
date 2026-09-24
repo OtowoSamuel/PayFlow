@@ -847,7 +847,8 @@ async function main(): Promise<void> {
 // JSON_OUTPUT flag for error path
 const JSON_OUTPUT = !(getArg("--format") ?? "json").match(/^table$/i);
 
-main().catch((err) => {
+const isMain = process.argv[1] === fileURLToPath(import.meta.url);
+if (isMain) main().catch((err) => {
   console.error(`Fatal error: ${err instanceof Error ? err.message : err}`);
   process.exit(EXIT_HARD_FAILURE);
 });

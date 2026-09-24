@@ -105,7 +105,7 @@ async function main(): Promise<void> {
   }
 
   const query = db.prepare(
-    `SELECT data FROM events
+    `SELECT raw_data FROM events
      WHERE event_name = 'charge_failed'
        AND timestamp >= ?
      ORDER BY timestamp DESC`,

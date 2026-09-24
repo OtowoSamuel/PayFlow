@@ -443,4 +443,5 @@ function main(): void {
   process.exit(totalChanges > 0 ? 1 : 0);
 }
 
-main();
+const isMain = process.argv[1] === fileURLToPath(import.meta.url);
+if (isMain) main();

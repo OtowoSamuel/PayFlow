@@ -472,7 +472,7 @@ async function main() {
 
       for (const r of rows) {
         try {
-          const parsed = JSON.parse(r.data);
+          const parsed = JSON.parse(r.raw_data);
           const user = parsed.user || parsed.address || "";
           const merchant = parsed.merchant || undefined;
           const amount = parsed.amount?.toString() || undefined;

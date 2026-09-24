@@ -54,7 +54,7 @@ function logSummary(msg: string) {
   if (isJsonOutput && !outFile) {
     console.error(msg);
   } else {
-    logSummary(msg);
+    console.error(msg);
   }
 }
 
